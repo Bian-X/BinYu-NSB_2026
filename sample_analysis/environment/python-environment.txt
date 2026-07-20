@@ -1,0 +1,7 @@
+Python 3.12.13
+numpy 2.3.5
+pandas 3.0.1
+scikit-learn 1.8.0
+matplotlib 3.10.8
+
+The full transitive dependency set is recorded in python-requirements-lock.txt.

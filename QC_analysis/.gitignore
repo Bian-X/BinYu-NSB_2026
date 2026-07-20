@@ -1,0 +1,18 @@
+# Input data and generated analysis artefacts
+data/*.csv
+outputs/*
+!data/README.md
+!outputs/.gitkeep
+
+# Local environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

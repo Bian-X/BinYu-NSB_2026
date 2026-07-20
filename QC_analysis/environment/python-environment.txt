@@ -1,0 +1,5 @@
+Python: CPython 3.12.13
+Platform used for verification: Windows 11 (win-amd64)
+Verification date: 2026-07-20
+Entry point: python scripts/run_qc_pdf.py --data-dir data --out-dir outputs
+

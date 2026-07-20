@@ -1,0 +1,22 @@
+# Local environments and compiled files in either independent workflow
+**/.venv/
+**/.R-library/
+**/__pycache__/
+**/*.py[cod]
+
+# Input data, generated tables, and generated figures
+**/data/*.csv
+**/figures/*
+**/results/*
+**/outputs/*
+!**/data/README.md
+!**/figures/.gitkeep
+!**/results/.gitkeep
+!**/outputs/.gitkeep
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

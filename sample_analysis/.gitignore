@@ -1,0 +1,34 @@
+# Input and instrument data
+/data/*.csv
+/data/*.tsv
+/data/*.xlsx
+/data/*.raw
+/data/*.RAW
+
+# Generated workflow outputs
+/figures/*.pdf
+/figures/*.png
+/results/**
+!/results/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.R-library/
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+environment/*.log
+environment/r_package_check_*.csv
+environment/r_runtime_check.txt
+
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

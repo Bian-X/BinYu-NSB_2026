@@ -1,0 +1,5 @@
+# Reproducible Python environment for the Figure 2D-F QC workflow.
+# Target interpreter: CPython 3.12.x
+numpy==2.3.5
+pandas==3.0.1
+reportlab==4.4.9

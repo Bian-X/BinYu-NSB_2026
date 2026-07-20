@@ -1,0 +1,5 @@
+"Package","Version"
+"limma","3.62.2"
+"AnnotationDbi","1.68.0"
+"org.Mm.eg.db","3.20.0"
+"GO.db","3.20.0"

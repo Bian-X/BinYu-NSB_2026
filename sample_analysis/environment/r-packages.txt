@@ -1,0 +1,7 @@
+R >= 4.4.3
+limma
+AnnotationDbi
+org.Mm.eg.db
+GO.db
+stats
+graphics
