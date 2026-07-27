@@ -22,5 +22,3 @@ The differential analyses require four columns matching each of the G2 and G4
 replicates, with names ending in `.raw.PG.Quantity`. The PCA workflow expects
 24 quantitative columns in each region report.
 
-Do not commit input data, raw instrument files, or sample metadata unless their
-distribution has been approved by the data owner and ethics/data-access terms.
