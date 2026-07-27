@@ -80,9 +80,3 @@ The differential-protein and GO demonstrations use raw P-value thresholds and
 are explicitly exploratory. They must not be interpreted as confirmatory
 findings without multiple-testing adjustment and an analysis plan appropriate
 to the intended claim.
-
-## Before publishing
-
-Follow [docs/REPOSITORY_CHECKLIST.md](docs/REPOSITORY_CHECKLIST.md), choose a
-license, verify that no restricted data are present, and add the repository URL
-or archival DOI to the manuscript.
