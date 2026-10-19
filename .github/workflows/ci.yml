@@ -1,0 +1,54 @@
+name: Repository checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-checks:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      MPLBACKEND: Agg
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.6.1"
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Check dependency compatibility
+        run: python -m pip check
+      - name: Check distributed source files
+        run: python validation/check_source_manifest.py
+      - name: Check Python syntax
+        run: python -m compileall -q run_all.py QC_analysis sample_analysis validation
+      - name: Run regression tests
+        run: python validation/test_regressions.py
+      - name: Check Python entry point
+        run: python run_all.py --help
+      - name: Check R syntax
+        shell: Rscript {0}
+        run: |
+          sources <- c(list.files('sample_analysis', pattern='[.]R$', recursive=TRUE, full.names=TRUE),
+                       list.files('validation', pattern='[.]R$', full.names=TRUE))
+          invisible(lapply(sources, parse))
+      - name: Check Bash syntax
+        if: runner.os == 'Linux'
+        run: bash -n run_all.sh
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $parseErrors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'run_all.ps1'), [ref]$null, [ref]$parseErrors)
+          if ($parseErrors.Count) { throw ($parseErrors | Out-String) }

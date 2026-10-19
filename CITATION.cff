@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying study and the exact deposited code version."
+title: "Proteomics workflows for Figure 2D-F and Figure 3"
+version: "2026.10.18"
+type: software
+license: BSD-3-Clause
+repository-code: "https://github.com/Bian-X/BinYu-NSB_2026"
+authors:
+  - family-names: Zhang
+    given-names: Zimu
+  - family-names: Zhang
+    given-names: Zixu
