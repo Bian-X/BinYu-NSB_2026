@@ -46,10 +46,9 @@ with `--metadata`.
 
 ## Software requirements
 
-The complete workflow was validated on Windows 11 with CPython 3.12.14,
-R 4.6.1, and Bioconductor 3.23, and rechecked with CPython 3.12.10 for the
-2026.10.26 maintenance update. Python 3.12 patch versions are accepted and
-recorded. Full runs on Linux and macOS have not been validated.
+The reference environment uses CPython 3.12.14, R 4.6.1, and Bioconductor 3.23
+on Windows. Python 3.12 patch versions are accepted and recorded by the root
+runner. Full runs on Linux and macOS have not been validated.
 
 | Python package | Version | Use |
 | --- | --- | --- |
@@ -187,8 +186,13 @@ Rscript validation/test_regressions.R
 
 The runner returns a nonzero exit code on failure. Inspect
 `validation/run_manifest.json`, `validation/manuscript_result_checks.json`, and,
-for a full run, `validation/numeric_verification.json`. The run manifest records
-commands, software versions, input/output hashes, and execution status.
+for a full run, `validation/numeric_verification.json`. For runs launched through
+`run_all.py`, the run manifest records software versions, completed subprocess
+commands and exit codes, the 12 processed-report hashes, and execution status.
+The Figure 2 branch also records the metadata workbook hash. Output hashes are
+collected after successful analysis and checks. Optional event and retention-time
+input files are not hashed by this runner. Standalone scripts do not write this
+root-workflow manifest.
 [SOURCE_MANIFEST.sha256](SOURCE_MANIFEST.sha256) identifies the distributed
 source files and metadata workbook. GitHub Actions checks source integrity,
 syntax, and regression tests without the processed reports.
