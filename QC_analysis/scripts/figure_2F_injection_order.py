@@ -20,9 +20,11 @@ Figure 2F methodology (unchanged from the manuscript):
 
 Only the sample ordering differs: columns/rows are sorted by
 `injection_order` (1 = first injection). Pooled-QC injections are
-interspersed through the acquisition series (2 at the start, 1 after
-every 12 biological samples, 2 at the end), so this view exposes any
-time-dependent drift that the region-blocked view hides.
+interspersed through the acquisition series (2 at the start, usually 1 after
+12 biological samples, 2 at the end). In the retained sequence there are 8
+biological samples between QC_12 and QC_13 and 16 between QC_13 and QC_14;
+all positions are read from metadata. This view allows inspection of temporal
+patterns that the region-blocked view can obscure.
 
 Outputs (written to --out-dir):
   figure_2F_injection_order.pdf / .png  heatmap

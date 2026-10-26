@@ -11,8 +11,11 @@ import pandas as pd
 from openpyxl import load_workbook
 
 REPO=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(REPO))
 sys.path.insert(0,str(REPO/'QC_analysis/scripts'))
+import run_all as runner
 import qc_analysis as qa
+from qc_time_order_summary import write_event_records
 from metadata_io import read_sample_metadata,match_metadata
 from figure_2F_injection_order import build_figure_2f_correlation
 spec=importlib.util.spec_from_file_location('pca_fixed',REPO/'sample_analysis/scripts/python/brain_region_pca.py')
@@ -75,6 +78,16 @@ class MetadataTests(unittest.TestCase):
 
 
 class PreprocessingTests(unittest.TestCase):
+    def test_duplicate_raw_csv_headers_rejected_before_pandas_renaming(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'PL_protein_groups.csv'
+            quantity='[1] Astral_MSP2600441_1_G1_1_PL.raw.PG.Quantity'
+            path.write_text(f'PG.ProteinAccessions,{quantity},{quantity}\nP1,1,2\n',encoding='utf-8')
+            for reader in (qa.load_report,pca.read_and_preprocess_region):
+                with self.subTest(reader=reader.__name__):
+                    with self.assertRaisesRegex(ValueError,'duplicate CSV column'):
+                        reader(path)
+
     def test_qc_loader_uses_only_manifest_reports(self):
         with tempfile.TemporaryDirectory() as directory:
             folder=Path(directory)
@@ -160,6 +173,34 @@ class PreprocessingTests(unittest.TestCase):
         cv=qa.qc_cv_table(table,meta,ann.set_index('PG.ProteinAccessions',drop=False)).set_index('PG.ProteinAccessions')
         self.assertEqual(cv.loc['b','qc_detected_n'],1)
         self.assertTrue(pd.isna(cv.loc['b','qc_cv_percent']))
+
+
+class RunOutputTests(unittest.TestCase):
+    def test_omitted_events_remove_previous_export_but_preserve_other_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder=Path(directory)
+            unrelated=folder/'notes.csv';unrelated.write_text('keep this',encoding='utf-8')
+            events=pd.DataFrame({'injection_order':[1],'event_type':['provided'],'description':['fixture']})
+            write_event_records(folder,events)
+            self.assertTrue((folder/'provided_acquisition_events.csv').exists())
+            write_event_records(folder,None)
+            self.assertFalse((folder/'provided_acquisition_events.csv').exists())
+            self.assertEqual(unrelated.read_text(encoding='utf-8'),'keep this')
+
+    def test_run_manifest_excludes_prior_unmodified_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);folder=root/'results';folder.mkdir()
+            stale=folder/'old_result.csv';stale.write_text('old',encoding='utf-8')
+            rewritten=folder/'recomputed.csv';rewritten.write_text('before',encoding='utf-8')
+            before=runner.snapshot_outputs([folder])
+            rewritten.write_text('recalculated result',encoding='utf-8')
+            new=folder/'new_result.csv';new.write_text('current',encoding='utf-8')
+            outputs=runner.collect_current_outputs(root,[folder],before)
+            self.assertEqual({row['path'] for row in outputs},
+                             {'results/recomputed.csv','results/new_result.csv'})
+            self.assertTrue(stale.exists())
+            for row in outputs:
+                self.assertEqual(row['sha256'],runner.sha256(root/row['path']))
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

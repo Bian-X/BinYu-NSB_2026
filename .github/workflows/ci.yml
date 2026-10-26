@@ -43,6 +43,9 @@ jobs:
           sources <- c(list.files('sample_analysis', pattern='[.]R$', recursive=TRUE, full.names=TRUE),
                        list.files('validation', pattern='[.]R$', full.names=TRUE))
           invisible(lapply(sources, parse))
+      - name: Run R regression tests
+        # Base-R plotting fallbacks need no study data or Bioconductor packages.
+        run: Rscript validation/test_regressions.R
       - name: Check Bash syntax
         if: runner.os == 'Linux'
         run: bash -n run_all.sh

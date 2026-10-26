@@ -17,6 +17,15 @@ import qc_analysis as qa
 from metadata_io import read_sample_metadata, match_metadata
 
 
+def write_event_records(out_dir: Path, events: pd.DataFrame | None) -> None:
+    """Keep the exported event table consistent with this run's inputs."""
+    path = out_dir / 'provided_acquisition_events.csv'
+    if events is None:
+        path.unlink(missing_ok=True)
+    else:
+        events.to_csv(path, index=False)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-dir', type=Path, required=True)
@@ -107,7 +116,7 @@ def main():
         for event in events.itertuples():
             axes[0].text(event.injection_order, 1, event.event_type, transform=axes[0].get_xaxis_transform(),
                          rotation=90, fontsize=7, va='top')
-        events.to_csv(args.out_dir / 'provided_acquisition_events.csv', index=False)
+    write_event_records(args.out_dir, events)
     axes[-1].set_xlabel('LC-MS/MS injection order')
     fig.suptitle('Chronological pooled-QC summary\nExported PG.Quantity; RT/events shown only when provided')
     fig.savefig(args.out_dir / 'figure_QC_time_order_summary.pdf', dpi=600)

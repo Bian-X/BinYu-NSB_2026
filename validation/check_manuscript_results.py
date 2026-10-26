@@ -23,7 +23,8 @@ def check_outputs(root,scope,strict=True,selection_sensitivity=False):
         test('QC CV <=30 percent',int(eligible.qc_cv_percent.le(30).sum()),8050)
         test('QC CV >100 percent',int(eligible.qc_cv_percent.gt(100).sum()),4)
         regression=json.loads((q/'qc_protein_injection_order_regression.json').read_text())
-        for key,value,tol in [('n',8880,0),('span',288,0),('median_ratio',1.066,.0005),('p95_ratio',1.370,.0005),('ge1p5',248,0),('pct_ge1p5',2.79,.005),('excluded_from_regression',28,0)]:
+        # Reference metadata follows the retained RAW acquisition chronology (QC_13 at 141).
+        for key,value,tol in [('n',8880,0),('span',288,0),('median_ratio',1.066,.0005),('p95_ratio',1.369,.0005),('ge1p5',249,0),('pct_ge1p5',2.80,.005),('excluded_from_regression',28,0)]:
             test('QC regression '+key,regression[key],value,tol)
         audit=pd.read_csv(q/'qc_regression_selection_audit.csv')
         test('regression exclusion count is CV minus regression',int(audit.CVEligible.sum()-audit.RegressionIncluded.sum()),28)

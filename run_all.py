@@ -10,6 +10,27 @@ R_PACKAGES={'limma':'3.68.5','AnnotationDbi':'1.74.0','org.Mm.eg.db':'3.23.0','G
 def sha256(path):
     with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 
+
+def snapshot_outputs(folders):
+    """Record existing files so a reused directory cannot publish stale results."""
+    existing = {}
+    for folder in folders:
+        for path in folder.rglob('*'):
+            if path.is_file():
+                info = path.stat()
+                existing[path] = (info.st_mtime_ns, info.st_size)
+    return existing
+
+
+def collect_current_outputs(output_root, folders, before):
+    """Hash only files created or rewritten by the active analysis branches."""
+    after = snapshot_outputs(folders)
+    return [{'path': path.relative_to(output_root).as_posix(),
+             'bytes': signature[1], 'sha256': sha256(path)}
+            for path, signature in sorted(after.items())
+            if before.get(path) != signature]
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--data-dir',type=Path,required=True)
@@ -25,7 +46,7 @@ def main():
     env=os.environ.copy();env.update(PYTHONDONTWRITEBYTECODE='1',PYTHONUTF8='1')
     if platform.system()=='Windows':env['LC_ALL']='English_United States.utf8'
     if a.r_library:env['R_LIBS_USER']=str(a.r_library.resolve(strict=True))
-    run={'package_version':'2026.10.18','scope':a.figures,'selection_sensitivity':a.selection_sensitivity,'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'python':platform.python_version(),'platform':platform.platform(),'environment_policy':a.environment,'commands':[],'status':'running','behavioral_analysis_included':False}
+    run={'package_version':'2026.10.26','scope':a.figures,'selection_sensitivity':a.selection_sensitivity,'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'python':platform.python_version(),'platform':platform.platform(),'environment_policy':a.environment,'commands':[],'status':'running','behavioral_analysis_included':False}
     def record():(validation/'run_manifest.json').write_text(json.dumps(run,indent=2),encoding='utf-8')
     def execute(executable,*arguments):
         command=[str(executable),*[str(x) for x in arguments]];print('+ '+subprocess.list2cmdline(command),flush=True)
@@ -58,8 +79,13 @@ def main():
             if a.environment=='manuscript':raise RuntimeError(message+'\nInstall the recorded versions or explicitly select --environment compatible.')
             print('WARNING: '+message,flush=True)
         py('validation/test_regressions.py')
+        if a.figures in ('all','figure3'):r('validation/test_regressions.R')
         result=a.output_root/'sample_analysis/results';figures=a.output_root/'sample_analysis/figures';qc=a.output_root/'QC_analysis/outputs';assembled=a.output_root/'manuscript_figures'
         for folder in (result,figures,qc,assembled):folder.mkdir(parents=True,exist_ok=True)
+        active_folders=[assembled]
+        if a.figures in ('all','figure3'):active_folders.extend((result,figures))
+        if a.figures in ('all','figure2'):active_folders.append(qc)
+        output_before=snapshot_outputs(active_folders)
         if a.figures in ('all','figure3'):
             common=['--data-dir',a.data_dir,'--output-dir',result,'--font-family',a.font_family]
             r('sample_analysis/scripts/R/volcano_PL_G5_vs_G1.R',*common,'--output-pdf',figures/'PL_volcano_G5_vs_G1.pdf')
@@ -92,7 +118,7 @@ def main():
         if a.selection_sensitivity:check_args.append('--selection-sensitivity')
         py('validation/check_manuscript_results.py',*check_args)
         run['status']='passed';run['finished_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
-        run['output_files']=[{'path':f.relative_to(a.output_root).as_posix(),'bytes':f.stat().st_size,'sha256':sha256(f)} for folder in (result,figures,qc,assembled) for f in sorted(folder.rglob('*')) if f.is_file() and (a.selection_sensitivity or not f.is_relative_to(result/'workflow_example_comparison'))]
+        run['output_files']=collect_current_outputs(a.output_root,active_folders,output_before)
         record();print('Completed '+a.figures+'. Run provenance: '+str(validation),flush=True)
     except Exception as exc:run['status']='failed';run['error']=str(exc);record();raise
 if __name__=='__main__':main()

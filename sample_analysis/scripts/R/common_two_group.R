@@ -137,8 +137,9 @@ open_figure_pdf <- function(filename, width, height, family = DEFAULT_FONT_FAMIL
   if (capabilities("cairo")) {
     grDevices::cairo_pdf(filename, width = width, height = height, family = family, onefile = TRUE)
   } else {
-    warning("Cairo is unavailable; using the standard PDF device.")
-    grDevices::pdf(file = filename, width = width, height = height, family = family, onefile = TRUE, useDingbats = FALSE)
+    fallback_family <- if (family %in% names(grDevices::pdfFonts())) family else "Helvetica"
+    warning("Cairo is unavailable; using the standard PDF device with font family: ", fallback_family)
+    grDevices::pdf(file = filename, width = width, height = height, family = fallback_family, onefile = TRUE, useDingbats = FALSE)
   }
 }
 

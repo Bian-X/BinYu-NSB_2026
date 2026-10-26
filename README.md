@@ -2,7 +2,7 @@
 
 Analysis code for Figure 2D-F and Figure 3A-E of *A within-animal matched
 multi-region proteomics dataset of fear conditioning and memory retrieval in
-mice*. Version: **2026.10.18**.
+mice*. Version: **2026.10.26**.
 
 The workflow calculates acquisition quality control, differential protein
 abundance, Gene Ontology (GO) enrichment, principal component analysis (PCA),
@@ -47,7 +47,8 @@ with `--metadata`.
 ## Software requirements
 
 The complete workflow was validated on Windows 11 with CPython 3.12.14,
-R 4.6.1, and Bioconductor 3.23. Python 3.12 patch versions are accepted and
+R 4.6.1, and Bioconductor 3.23, and rechecked with CPython 3.12.10 for the
+2026.10.26 maintenance update. Python 3.12 patch versions are accepted and
 recorded. Full runs on Linux and macOS have not been validated.
 
 | Python package | Version | Use |
@@ -134,6 +135,11 @@ Without `--output-root`, outputs are written under the repository root.
 Output directories are created automatically. Missing event or retention-time
 records are not estimated.
 
+Use a fresh output directory for each analysis when possible. In a reused
+directory, the run manifest lists only files created or rewritten by the active
+branches; unrelated older files remain on disk and are not current-run outputs.
+Omitting `--events` removes the event table previously exported by this script.
+
 ## Figure map
 
 | Panel | Analysis | Main script |
@@ -176,6 +182,7 @@ Run checks that do not require the processed reports with:
 ```text
 python validation/check_source_manifest.py
 python validation/test_regressions.py
+Rscript validation/test_regressions.R
 ```
 
 The runner returns a nonzero exit code on failure. Inspect

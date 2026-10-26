@@ -7,8 +7,10 @@ Exclusion precedes preprocessing. Default: independent 263/264 variants.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 import matplotlib
@@ -108,6 +110,12 @@ def read_and_preprocess_region(path: Path, excluded_samples=(), imputation="row-
     if region is None:
         raise ValueError(f"Cannot determine region from filename: {path.name}")
 
+    # Check the original names before pandas silently disambiguates duplicates.
+    with path.open(encoding="utf-8-sig", newline="") as handle:
+        header = next(csv.reader(handle), [])
+    duplicates = [name for name, count in Counter(header).items() if count > 1]
+    if duplicates:
+        raise ValueError(f"{path.name}: duplicate CSV column names: {duplicates[:5]}")
     table = pd.read_csv(path, na_values=["NaN"], keep_default_na=True, low_memory=False)
     input_label_mapping = [{"source_column": c, "analysis_column": c} for c in table.columns if c.endswith(".raw.PG.Quantity")]
     if table.columns.duplicated().any():
